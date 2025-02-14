@@ -1,13 +1,9 @@
 import os
+import pinecone
 import streamlit as st
-from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
-from langchain_community.vectorstores.pinecone import Pinecone
-from langchain.memory import ConversationBufferMemory
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from dotenv import load_dotenv
 from langchain.chains import RetrievalQA
-import pinecone as pc
-from langchain.chains import ConversationalRetrievalChain
 
 
 def initialize_rag_chain():
@@ -18,32 +14,20 @@ def initialize_rag_chain():
     pkey = os.getenv("PINECONE_API_KEY")
     # pinecone_environment = os.getenv("PINECONE_ENVIRONMENT")
 
-    index_name = "https://naza-2-9w8b2h3.svc.aped-4627-b74a.pinecone.io"  # Replace with your Pinecone Index Name
+    index_name = os.getenv('PINECONE_INDEX')  # Replace with your Pinecone Index Name
     embeddings = GoogleGenerativeAIEmbeddings(
         model="models/text-embedding-004", google_api_key=google_key
     )
     # pc.init(api_key=pkey, environment=pinecone_environment)  # Initialize Pinecone
 
-    index = pc.Index(api_key=pkey, host=index_name)
-    vectorstore = Pinecone(
+    index = pinecone.Index(api_key=pkey, host=index_name)
+    vectorstore = pinecone.Pinecone(
         index=index, embedding=embeddings, text_key=pkey  # , namespace="codex-v1"
     )
     print("initialized vector store")
     model = ChatGoogleGenerativeAI(api_key=google_key, model="gemini-2.0-flash-exp")
     print("model/LLM online")
 
-    # Initialize conversation memory
-    # memory = ConversationBufferMemory(
-    #     llm=model, memory_key="answer", return_messages=True, output_key='answer'
-    # )
-
-    # qa = ConversationalRetrievalChain.from_llm(
-    #     llm=model,
-    #     retriever=vectorstore.as_retriever(),
-    #     memory=memory,
-    #     verbose=False,  # Set to True for debugging
-    #     return_source_documents=True,
-    # )
     qa = RetrievalQA.from_chain_type(
         llm=model, chain_type="stuff", retriever=vectorstore.as_retriever()
     )
@@ -107,5 +91,4 @@ def main():
         #     st.write("No sources found.")
 
 
-# if __name__ == "__main__":
 main()
