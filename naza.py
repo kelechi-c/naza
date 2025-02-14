@@ -1,6 +1,7 @@
 import os
-import pinecone
 import streamlit as st
+from pinecone import Pinecone
+from langchain_pinecone.vectorstores import PineconeVectorStore
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from dotenv import load_dotenv
 from langchain.chains import RetrievalQA
@@ -18,12 +19,10 @@ def initialize_rag_chain():
     embeddings = GoogleGenerativeAIEmbeddings(
         model="models/text-embedding-004", google_api_key=google_key
     )
-    # pc.init(api_key=pkey, environment=pinecone_environment)  # Initialize Pinecone
+    client = Pinecone(api_key=pkey)
+    index = client.Index(name='naza', host=index_name)
+    vectorstore = PineconeVectorStore(index=index, embedding=embeddings, pinecone_api_key=pkey)
 
-    index = pinecone.Index(api_key=pkey, host=index_name)
-    vectorstore = pinecone.Pinecone(
-        index=index, embedding=embeddings, text_key=pkey  # , namespace="codex-v1"
-    )
     print("initialized vector store")
     model = ChatGoogleGenerativeAI(api_key=google_key, model="gemini-2.0-flash-exp")
     print("model/LLM online")
