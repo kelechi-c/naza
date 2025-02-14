@@ -37,7 +37,7 @@ def initialize_rag_chain():
 def main():
     """Main function to run the Streamlit app."""
 
-    st.title("naza-codex")
+    st.title("Ask the codex/BPC")
 
     # Initialize the RAG chain
     try:

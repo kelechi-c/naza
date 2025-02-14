@@ -1,4 +1,5 @@
 langchain-community
+langchain-pinecone
 pinecone
 google-generativeai
 langchain_google_genai
